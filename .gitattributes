@@ -1,0 +1,16 @@
+# 只声明本仓库自己产出的文本层。
+#
+# 刻意不写 `* text=auto`：本机 core.autocrlf=true，而 raw/ 里的原文必须保持原字节
+# （现有原文是 CRLF 且无 BOM），任何全局归一化都会把「文章本体」改掉。
+
+# 无扩展名的配置文件也要显式声明，否则会落回 core.autocrlf 被转成 CRLF
+.editorconfig  text eol=lf
+.gitattributes text eol=lf
+.gitignore     text eol=lf
+
+*.md   text eol=lf
+*.mdc  text eol=lf
+*.py   text eol=lf
+
+# 原文留底：完全不做文本转换，git 不碰它的换行与编码
+raw/** -text

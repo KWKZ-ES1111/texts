@@ -1,0 +1,59 @@
+---
+description: 本仓库 Markdown 小说格式规范。写或改任何 .md 之前必读。
+globs: ["**/*.md"]
+alwaysApply: true
+---
+
+# Markdown 格式规范
+
+完整规范在 `docs/md-spec.md`，动任何 `.md` 之前先读它。以下是最高频的约束。
+
+## 作品结构
+
+```
+raw/<标题>.txt                    原文留底，原字节，只读
+works/<标题>/metadata.md          元数据 + 简介 + 生成的目录索引
+works/<标题>/style.md             文体与符号约定 + allow: 豁免声明（可选）
+works/<标题>/content/NNN-短标题.md 章节，阅读顺序 = 文件名字典序
+```
+
+**作品目录名 = `metadata.md` 的 `title`**，这是作品的唯一身份（没有 slug）。作品目录里只允许 `metadata.md`、`style.md`、`content/` 三项。
+
+分类（体裁、篇幅、状态）**放 front matter 的 `tags` / `status`，不进目录层级** —— 目录只能表达一个单值维度。只在真有「系列」时才加一层 `works/<系列>/`。
+
+## 硬约束
+
+1. 章节文件名 `NNN-短标题.md`，从 `000` 起连续、无跳号，放在 `content/` 下。短标题不得含空格与 `· : / \ * ? " < > | —`。
+2. front matter 只用简单结构：顶层 `key: value` 或行内数组。**禁止**缩进、嵌套、多行字符串（`|` `>`）、锚点。
+   `metadata.md` 必填 `title` `status` `created`；章节必填 `title` `kind`，且 `title` 必须与正文 `#` 标题逐字一致。
+3. 排版默认值：**一段一行**（段内不硬换行）；段间恰好一个空行；不缩进；无行尾空格；UTF-8 无 BOM + LF。
+4. 章节正文默认禁止：链接、图片、表格、代码块、行内代码、HTML、脚注、Markdown 列表、`---`。场景跳跃默认用 `* * *`。
+   作者手写的中文编号（`零`、`一、`）保留原样，不许转阿拉伯数字或列表。
+5. **改存量文本时只加结构标记，一字不改**：不改标点、引号、错别字，不补标题与章节号，不合并拆分段落，不把任何写法改成语义等价的 Markdown，不归一化原文的空白。
+   判定标准：去掉新增的 `# `、front matter、文件边界、CRLF→LF，以及 §8 授权的书名行迁移之后，产物必须**逐字等于** `raw/` 原文。
+6. **不要给任何符号赋予全局语义。** 某篇里的方括号、`■` 这类写法只属于那一篇。每篇作品自己的约定记在 `works/<标题>/style.md`，**只记录原文里已出现的写法，不得发明**。
+7. **`metadata.md` 里的目录索引是生成的**：只有 `<!-- toc:begin -->` 与 `<!-- toc:end -->` 之间由 `tools/build_toc.py` 重写，标记之外手写。**不要手改那张表**，改完章节要重跑生成器，否则 `FM011` 报错。
+
+## 规范是「默认 + 可覆盖」
+
+除入口契约外，**所有规则都是默认值**，作品可在 `works/<标题>/style.md` 的 front matter 里覆盖：
+
+```yaml
+---
+title: 在 · 文体与符号约定
+allow: [heading-not-first, keep-blank-runs, keep-adjacent-lines]
+---
+```
+
+`python tools/lint_md.py --features` 列出全部豁免项（19 个），也可直接写规则码。不可豁免的只有 9 条：`ENC001–004`（编码/换行）、`FM001`/`FM002`（front matter 入口）、`FM007`（文件夹名=title）、`ST001`/`ST002`（占位与阅读顺序）、`FM009`（豁免声明本身）。
+
+## 改完必须做
+
+```
+python tools/lint_md.py --fix-eol          # 刚写过文件就先归一换行
+python tools/lint_md.py                    # 格式
+python tools/build_toc.py <标题> --check    # 目录索引是否过期
+python tools/verify_verbatim.py <标题>      # §8 逐字比对（lint 查不出内容被改写）
+```
+
+Lint 只读，不会自动改文件。它的报错优先于你的排版判断，但**不优先于原文** —— 报错与原文冲突时加豁免，不要改原文。

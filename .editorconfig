@@ -1,0 +1,17 @@
+root = true
+
+# 刻意不用 [*]：那会让编辑器把现有 .txt 的 CRLF 也归一成 LF，
+# 等于改动了原文留底。只对新层（.md / .py 等）生效。
+
+[*.{md,mdc,py,json,yml,yaml}]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# 原文层：行尾空格与末尾换行都可能是内容，一律不碰
+[*.txt]
+charset = utf-8
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = false
